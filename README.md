@@ -19,7 +19,7 @@ If everything goes well, it well display:
 ## How to use merger
 After you modify some firewall rule of some interfaces, you may want to use Merger to merge the `floating_rules.xml` and `floating_seperator.xml` that you backup before with current backup.xml file 
 
-1. Download the current config.xml from your pfSense: `Diagnostics` > `Backup&Restore` > select `Backup` area as `Firewall Rules` > download it
+1. Download the current config.xml from your pfSense: `Diagnostics` > `Backup&Restore` > select `Backup area` as `Firewall Rules` > download it
 ![Download the backup.xml from your pfSense](images/1.png)
 
 2. `python merge_float.py <current_config.xml> <floating_rules.xml> <floating_separators.xml> <output.xml>`
@@ -27,3 +27,4 @@ If everything goes well, it well display:
 ```
 ✔ merge success! ouput file: output.xml
 ```
+3. Restore the config of your pfSense: `Diagnostics` > `Backup&Restore` > select `Restore area` as `Firewall Rules` > upload `output.xml` > Restore
