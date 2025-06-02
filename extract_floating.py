@@ -13,6 +13,18 @@ def apply_cdata_to_elements(root, tag_names):
         if elem.tag in tag_names and elem.text:
             elem.text = etree.CDATA(elem.text)
 
+# 修正錯誤閉合標籤的函數
+def fix_misclosed_tags(xml: str) -> str:
+    corrections = {
+        'max-src-nodes': 'max-src-nodes',
+        'max-src-conn': 'max-src-conn',
+        'max-src-states': 'max-src-states',
+    }
+    for correct_tag in corrections:
+        xml = re.sub(rf'<{correct_tag}></max>', rf'<{correct_tag}></{correct_tag}>', xml)
+    return xml
+
+
 def save_element_to_file(element, filename, cdata_tags):
     apply_cdata_to_elements(element, cdata_tags)
     xml_bytes = etree.tostring(
@@ -23,12 +35,15 @@ def save_element_to_file(element, filename, cdata_tags):
     )
     xml_str = xml_bytes.decode('utf-8')
     fixed_str = fix_self_closing(xml_str)
+    fixed_str = fix_misclosed_tags(fixed_str)
     with open(filename, 'wb') as f:
         f.write(fixed_str.encode('utf-8'))
 
+
+
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print("用法: python3 extract_floating.py <input_config.xml> ")
+        print("usuage: python3 extract_floating.py <input_config.xml> ")
         sys.exit(1)
 
     input_file = sys.argv[1]
@@ -42,24 +57,24 @@ if __name__ == '__main__':
     output_separators = os.path.join(output_dir, "floating_separators.xml")
 
     if not os.path.exists(input_file):
-        print(f"錯誤：找不到檔案 {input_file}")
+        print(f"Error: can not find file {input_file}")
         sys.exit(1)
 
-    # 解析 XML
+    # parse XML
     try:
         tree = etree.parse(input_file)
     except etree.XMLSyntaxError as e:
-        print(f"XML 解析錯誤：{e}")
+        print(f"XML parsing error：{e}")
         sys.exit(1)
 
     root = tree.getroot()
     filter_section = root
 
     if filter_section is None:
-        print("錯誤：找不到 <filter> 區塊")
+        print("error: cannot find <filter> block")
         sys.exit(1)
 
-    # 建立新根節點
+    # establish new root 
     floating_root = etree.Element("floating_rules")
 
     # 複製 floating="yes" 的 <rule>
@@ -78,7 +93,7 @@ if __name__ == '__main__':
             floating_separators = etree.ElementTree(floating_separators).getroot()
 
     # --- 寫入兩個檔案 ---
-    save_element_to_file(floating_root, output_floating_rules, {"descr", "username"})
+    save_element_to_file(floating_root, output_floating_rules, {"descr", "username", "statetype"})
     if floating_separators is not None:
         save_element_to_file(floating_separators, output_separators, {"text"})
 
